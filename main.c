@@ -8,7 +8,10 @@
 
 #define MAX_ARGS 10  // максимальное количество аргументов
 
+int flag = 0;
+
 void onCtrlC(int sig) {
+    flag = 1;
     printf("Ctrl+C pressed, stopping the program...\n");
     // получаем список запущенных процессов
     system("ps -e");
@@ -16,10 +19,12 @@ void onCtrlC(int sig) {
     printf("Enter the PID of the process to stop: ");
     pid_t pid;
     scanf("%d", &pid);
+    getchar();
     // останавливаем процесс с помощью команды kill
     kill(pid, SIGTERM);
+    printf("Press Enter to continue...");
     // завершаем работу программы
-    exit(0);
+    // exit(0);
 }
 
 int main() {
@@ -31,8 +36,13 @@ int main() {
     signal(SIGINT, onCtrlC);  // обработка сигнала SIGINT
 
     while (1) {
-        printf("\n> ");                      // приглашение командной строки
+        printf("> ");                      // приглашение командной строки
         fgets(input, sizeof(input), stdin);  // получаем ввод пользователя
+        if (flag == 1) {
+            printf("> ");
+            fgets(input, sizeof(input), stdin);
+            flag = 0;
+        }
         count = 0;
         args[count++] = strtok(input, " \n");  // первый аргумент - имя команды
         while ((args[count++] = strtok(NULL, " \n")) != NULL) {
